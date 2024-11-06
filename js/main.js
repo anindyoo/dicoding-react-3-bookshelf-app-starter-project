@@ -51,6 +51,10 @@ const findBookIndex = (bookId) => {
   return books.findIndex((book) => book.id === bookId);
 };
 
+const countBookByCompletion = (completionStatus) => {
+  return books.filter((book) => book.isComplete === completionStatus).length;
+};
+
 const addBook = () => {
   const bookTitle = document.getElementById('bookFormTitle').value;
   const bookAuthor = document.getElementById('bookFormAuthor').value;
@@ -77,8 +81,24 @@ document.addEventListener(RENDER_EVENT, () => {
   const incompleteBookList = document.getElementById('incompleteBookList');
   incompleteBookList.innerHTML= '';
 
+  const incompleteCount = countBookByCompletion(false);
+  const incompleteCountElement = document.getElementById('incompleteCount');
+  incompleteCountElement.innerHTML = `${incompleteCount} buku`;
+  
+  if (incompleteCount === 0) {
+    incompleteBookList.innerHTML = '<p>Rak buku masih kosong.</p>';
+  }
+
   const completeBookList = document.getElementById('completeBookList');
   completeBookList.innerHTML = '';
+  
+  const completeCount = countBookByCompletion(true);
+  const completeCountElement = document.getElementById('completeCount');
+  completeCountElement.innerHTML = `${completeCount} buku`;
+  
+  if (completeCount === 0) {
+    completeBookList.innerHTML = '<p>Rak buku masih kosong.</p>';
+  }
 
   books.map((book) => {
     const bookElement = makeBookElement(book);
@@ -87,11 +107,13 @@ document.addEventListener(RENDER_EVENT, () => {
   });
 });
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const submitForm = document.getElementById('bookForm');
 
   submitForm.addEventListener('submit', (event) => {
     event.preventDefault();
     addBook();
   });
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
 });
