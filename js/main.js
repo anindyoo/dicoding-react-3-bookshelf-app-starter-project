@@ -1,7 +1,10 @@
-const books = [];
 const RENDER_EVENT = 'render-books';
 const SAVED_EVENT = 'saved-books';
 const STORAGE_KEY = 'BOOKSHELF_APP';
+
+const books = [];
+let filteredBooks = books;
+let searchQuery = '';
 
 const generateId = () => +new Date();
 
@@ -79,8 +82,8 @@ const findBookIndex = (bookId) => {
   return books.findIndex((book) => book.id === bookId);
 };
 
-const countBookByCompletion = (completionStatus) => {
-  return books.filter((book) => book.isComplete === completionStatus).length;
+const countBookByCompletion = (booksArray, completionStatus) => {
+  return booksArray.filter((book) => book.isComplete === completionStatus).length;
 };
 
 const addBook = () => {
@@ -93,6 +96,7 @@ const addBook = () => {
   const bookObject = generateBookObject(id, bookTitle, bookAuthor, bookYear, bookIsComplete);
   books.push(bookObject);
 
+  syncBookTitleSearch();
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
 };
@@ -113,15 +117,30 @@ const removeBook = (bookId) => {
   if (selectedBookIndex < 0) return 'Buku tidak ditemukan.';
 
   books.splice(selectedBookIndex, 1);
+  syncBookTitleSearch();
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
 };
 
+const searchBookByTitle = (query) => {
+  searchQuery = query;
+
+  filteredBooks = books.filter((book) => book.title.toLowerCase()
+    .includes(query.toLowerCase()));
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
+const syncBookTitleSearch = () => {
+  filteredBooks = books;
+  searchBookByTitle(searchQuery);
+}
+
 document.addEventListener(RENDER_EVENT, () => {
   const incompleteBookList = document.getElementById('incompleteBookList');
   incompleteBookList.innerHTML= '';
-
-  const incompleteCount = countBookByCompletion(false);
+  
+  const incompleteCount = countBookByCompletion(filteredBooks, false);
   const incompleteCountElement = document.getElementById('incompleteCount');
   incompleteCountElement.innerHTML = `${incompleteCount} buku`;
   
@@ -132,7 +151,7 @@ document.addEventListener(RENDER_EVENT, () => {
   const completeBookList = document.getElementById('completeBookList');
   completeBookList.innerHTML = '';
   
-  const completeCount = countBookByCompletion(true);
+  const completeCount = countBookByCompletion(filteredBooks, true);
   const completeCountElement = document.getElementById('completeCount');
   completeCountElement.innerHTML = `${completeCount} buku`;
   
@@ -140,7 +159,7 @@ document.addEventListener(RENDER_EVENT, () => {
     completeBookList.innerHTML = '<p>Rak buku masih kosong.</p>';
   }
 
-  books.map((book) => {
+  filteredBooks.map((book) => {
     const bookElement = makeBookElement(book);
 
     book.isComplete ? completeBookList.append(bookElement) : incompleteBookList.append(bookElement);
@@ -158,6 +177,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isStorageExist()) {
     loadDataFromStorage();
   }
-  
+
+  const searchTitleElement = document.getElementById('searchBookTitle');
+
+  searchTitleElement.addEventListener('input', () => searchBookByTitle(searchTitleElement.value));
+
   document.dispatchEvent(new Event(RENDER_EVENT));
 });
