@@ -32,6 +32,7 @@ const makeBookElement = (bookObject) => {
 
   const deleteBookButton = document.createElement('button');
   deleteBookButton.innerHTML = 'Hapus buku';
+  deleteBookButton.addEventListener('click', () => removeBook(id));
   
   const editBookButton = document.createElement('button');
   editBookButton.innerHTML = 'Edit buku';
@@ -71,9 +72,18 @@ const addBook = () => {
 const toggleIsComplete = (bookId) => {
   const selectedBookIndex = findBookIndex(bookId);
 
-  if (selectedBookIndex < 0) return 'Buku tidak ditemui.';
+  if (selectedBookIndex < 0) return 'Buku tidak ditemukan.';
 
   books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
+const removeBook = (bookId) => {
+  const selectedBookIndex = findBookIndex(bookId);
+
+  if (selectedBookIndex < 0) return 'Buku tidak ditemukan.';
+
+  books.splice(selectedBookIndex, 1);
   document.dispatchEvent(new Event(RENDER_EVENT));
 };
 
