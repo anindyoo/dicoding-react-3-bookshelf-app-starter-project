@@ -11,20 +11,6 @@ const generateBookObject = (id, title, author, year, isComplete) => ({
   isComplete,
 });
 
-const addBook = () => {
-  const bookTitle = document.getElementById('bookFormTitle').value;
-  const bookAuthor = document.getElementById('bookFormAuthor').value;
-  const bookYear = document.getElementById('bookFormYear').value;
-  const bookIsComplete = document.getElementById('bookFormIsComplete').checked;
-  
-  const id = generateId();
-  const bookObject = generateBookObject(id, bookTitle, bookAuthor, bookYear, bookIsComplete);
-  books.push(bookObject);
-
-  document.dispatchEvent(new Event(RENDER_EVENT));
-  // console.log(bookObject);
-};
-
 const makeBookElement = (bookObject) => {
   const {id, title, author, year, isComplete} = bookObject;
 
@@ -39,9 +25,10 @@ const makeBookElement = (bookObject) => {
   const yearText = document.createElement('p');
   yearText.innerText = year;
   titleText.setAttribute('data-testid', year);
-
+  
   const bookIsCompleteButton = document.createElement('button');
   bookIsCompleteButton.innerText = isComplete ? 'Tandai belum selesai dibaca' : 'Tandai selesai dibaca';
+  bookIsCompleteButton.addEventListener('click', () => toggleIsComplete(id));
 
   const deleteBookButton = document.createElement('button');
   deleteBookButton.innerHTML = 'Hapus buku';
@@ -58,6 +45,32 @@ const makeBookElement = (bookObject) => {
   bookItem.append(titleText, authorText, yearText, buttonsWrapper);
 
   return bookItem;
+};
+
+const findBookIndex = (bookId) => {
+  return books.findIndex((book) => book.id === bookId);
+};
+
+const addBook = () => {
+  const bookTitle = document.getElementById('bookFormTitle').value;
+  const bookAuthor = document.getElementById('bookFormAuthor').value;
+  const bookYear = document.getElementById('bookFormYear').value;
+  const bookIsComplete = document.getElementById('bookFormIsComplete').checked;
+  
+  const id = generateId();
+  const bookObject = generateBookObject(id, bookTitle, bookAuthor, bookYear, bookIsComplete);
+  books.push(bookObject);
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
+const toggleIsComplete = (bookId) => {
+  const selectedBookIndex = findBookIndex(bookId);
+
+  if (selectedBookIndex < 0) return 'Buku tidak ditemui.';
+
+  books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
+  document.dispatchEvent(new Event(RENDER_EVENT));
 };
 
 document.addEventListener(RENDER_EVENT, () => {
