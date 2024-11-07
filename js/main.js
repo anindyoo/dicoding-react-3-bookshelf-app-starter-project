@@ -2,6 +2,26 @@ const RENDER_EVENT = 'render-books';
 const SAVED_EVENT = 'saved-books';
 const STORAGE_KEY = 'BOOKSHELF_APP';
 
+const checkIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" class="check-icon">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+  </svg>`;
+
+const checkedIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="checked-icon">
+    <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd" />
+  </svg>`;
+
+const deleteIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="delete-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+  </svg>`;
+
+const editIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" class="edit-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+  </svg>`;
+
 const books = [];
 let filteredBooks = books;
 let searchQuery = '';
@@ -49,31 +69,44 @@ const makeBookElement = (bookObject) => {
   titleText.setAttribute('data-testid', title);
 
   const authorText = document.createElement('p');
-  authorText.innerText = author;
-  titleText.setAttribute('data-testid', author);
+  authorText.innerText = `by ${author}`;
+  authorText.setAttribute('data-testid', author);
 
   const yearText = document.createElement('p');
   yearText.innerText = year;
-  titleText.setAttribute('data-testid', year);
+  yearText.setAttribute('data-testid', year);
+
+  const authorYearWrapper = document.createElement('div');
+  authorYearWrapper.classList.add('author-year-wrapper');
+  authorYearWrapper.append(authorText, yearText);
+
+  const bookDetailWrapper = document.createElement('div');
+  bookDetailWrapper.classList.add('book-detail-wrapper');
+  bookDetailWrapper.append(titleText, authorYearWrapper);
   
   const bookIsCompleteButton = document.createElement('button');
-  bookIsCompleteButton.innerText = isComplete ? 'Tandai belum selesai dibaca' : 'Tandai selesai dibaca';
+  bookIsCompleteButton.innerHTML = isComplete ? checkedIcon : checkIcon;
+  bookIsCompleteButton.setAttribute('data-testid', 'bookItemIsCompleteButton');
   bookIsCompleteButton.addEventListener('click', () => toggleIsComplete(id));
 
   const deleteBookButton = document.createElement('button');
-  deleteBookButton.innerHTML = 'Hapus buku';
+  deleteBookButton.innerHTML = deleteIcon;
+  deleteBookButton.setAttribute('data-testid', 'bookItemDeleteButton');
   deleteBookButton.addEventListener('click', () => removeBook(id));
   
   const editBookButton = document.createElement('button');
-  editBookButton.innerHTML = 'Edit buku';
+  editBookButton.innerHTML = editIcon;
+  editBookButton.setAttribute('data-testid', 'bookItemEditButton');
 
   const buttonsWrapper = document.createElement('div');
-  buttonsWrapper.append(bookIsCompleteButton, deleteBookButton, editBookButton);
+  buttonsWrapper.classList.add('book-buttons-wrapper');
+  buttonsWrapper.append(bookIsCompleteButton, editBookButton, deleteBookButton);
 
   const bookItem = document.createElement('div');
+  bookItem.classList.add('book-item');
   bookItem.setAttribute('data-bookid', id);
   bookItem.setAttribute('data-testid', 'bookItem');
-  bookItem.append(titleText, authorText, yearText, buttonsWrapper);
+  bookItem.append(bookDetailWrapper, buttonsWrapper);
 
   return bookItem;
 };
@@ -104,7 +137,7 @@ const addBook = () => {
 const toggleIsComplete = (bookId) => {
   const selectedBookIndex = findBookIndex(bookId);
 
-  if (selectedBookIndex < 0) return 'Buku tidak ditemukan.';
+  if (selectedBookIndex < 0) return 'Book not found.';
 
   books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
   document.dispatchEvent(new Event(RENDER_EVENT));
@@ -114,7 +147,7 @@ const toggleIsComplete = (bookId) => {
 const removeBook = (bookId) => {
   const selectedBookIndex = findBookIndex(bookId);
 
-  if (selectedBookIndex < 0) return 'Buku tidak ditemukan.';
+  if (selectedBookIndex < 0) return 'Book not found.';
 
   books.splice(selectedBookIndex, 1);
   syncBookTitleSearch();
@@ -136,16 +169,21 @@ const syncBookTitleSearch = () => {
   searchBookByTitle(searchQuery);
 }
 
+const setSubmitButtonText = (checked) => {
+  const submitButton = document.querySelector('#bookFormSubmit span');
+  submitButton.innerHTML = checked ? 'Finished Bookshelf' : 'Unfinished Bookshelf';
+}
+
 document.addEventListener(RENDER_EVENT, () => {
   const incompleteBookList = document.getElementById('incompleteBookList');
   incompleteBookList.innerHTML= '';
   
   const incompleteCount = countBookByCompletion(filteredBooks, false);
   const incompleteCountElement = document.getElementById('incompleteCount');
-  incompleteCountElement.innerHTML = `${incompleteCount} buku`;
+  incompleteCountElement.innerHTML = `${incompleteCount} books`;
   
   if (incompleteCount === 0) {
-    incompleteBookList.innerHTML = '<p>Rak buku masih kosong.</p>';
+    incompleteBookList.innerHTML = '<p>Bookshelf empty.</p>';
   }
 
   const completeBookList = document.getElementById('completeBookList');
@@ -153,10 +191,10 @@ document.addEventListener(RENDER_EVENT, () => {
   
   const completeCount = countBookByCompletion(filteredBooks, true);
   const completeCountElement = document.getElementById('completeCount');
-  completeCountElement.innerHTML = `${completeCount} buku`;
+  completeCountElement.innerHTML = `${completeCount} books`;
   
   if (completeCount === 0) {
-    completeBookList.innerHTML = '<p>Rak buku masih kosong.</p>';
+    completeBookList.innerHTML = '<p>Bookshelf empty.</p>';
   }
 
   filteredBooks.map((book) => {
@@ -178,8 +216,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDataFromStorage();
   }
 
-  const searchTitleElement = document.getElementById('searchBookTitle');
+  const isCompleteCheckbox = document.getElementById('bookFormIsComplete');
+  isCompleteCheckbox.addEventListener('change', () => setSubmitButtonText(isCompleteCheckbox.checked));
 
+  const searchTitleElement = document.getElementById('searchBookTitle');
   searchTitleElement.addEventListener('input', () => searchBookByTitle(searchTitleElement.value));
 
   document.dispatchEvent(new Event(RENDER_EVENT));
