@@ -101,11 +101,13 @@ const makeBookElement = (bookObject) => {
   deleteBookButton.setAttribute('data-target', 'book');
   deleteBookButton.setAttribute('data-id', id);
   deleteBookButton.classList.add('openDeleteModalButton');
-  // deleteBookButton.addEventListener('click', () => removeBook(id));
   
   const editBookButton = document.createElement('button');
   editBookButton.innerHTML = editIcon;
   editBookButton.setAttribute('data-testid', 'bookItemEditButton');
+  editBookButton.setAttribute('data-target', 'book');
+  editBookButton.setAttribute('data-id', id);
+  editBookButton.classList.add('openEditModalButton');
 
   const buttonsWrapper = document.createElement('div');
   buttonsWrapper.classList.add('book-buttons-wrapper');
@@ -178,6 +180,26 @@ const clearBookshelf = (type) => {
   saveData();
 };
 
+const updateBook = (bookIndex) => {
+  const selectedBook = books[bookIndex];
+
+  const bookTitle = document.getElementById('editBookTitleForm').value;
+  const bookAuthor = document.getElementById('editBookAuthorForm').value;
+  const bookYear = document.getElementById('editBookYearForm').value;
+
+  books[bookIndex] = {
+    ...selectedBook,
+    title: bookTitle,
+    author: bookAuthor,
+    year: bookYear,
+  };
+  
+  closeModal();
+  syncBookTitleSearch();
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
+};
+
 const searchBookByTitle = (query) => {
   searchQuery = query;
 
@@ -198,13 +220,14 @@ const setSubmitButtonText = (checked) => {
 };
 
 const makeDeleteModal = (modal, target, id) => {
-  // console.log(target, id);
   const modalIcon = modal.querySelector('.modal-icon-indicator');
   const modalH2 = modal.querySelector('h2');
   const modalP = modal.querySelector('p');
+  const modalForm = modal.querySelector('.modal-form-wrapper');
   const modalConfirmButton = modal.querySelector('.modal-confirm-button');
-
+  
   modalConfirmButton.classList.add('danger-button');
+  modalForm.innerHTML = '';
 
   if (target === 'book') {
     const bookIndex = findBookIndex(id);
@@ -225,6 +248,74 @@ const makeDeleteModal = (modal, target, id) => {
   }
 };
 
+const makeEditModal = (modal, id) => {
+  const modalIcon = modal.querySelector('.modal-icon-indicator');
+  const modalH2 = modal.querySelector('h2');
+  const modalP = modal.querySelector('p');
+  const modalForm = modal.querySelector('.modal-form-wrapper');
+  const modalCancelButton = modal.querySelector('.modal-cancel-button');
+  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
+
+  const bookIndex = findBookIndex(id);
+  const selectedBook = books[bookIndex];
+
+  modalIcon.innerHTML = editIcon;
+  modalH2.innerHTML = 'Edit Book';
+  modalP.innerHTML = `Edit book: <strong>${selectedBook.title}</strong>.`;
+  modalForm.innerHTML = '';
+
+  const titleLabel = document.createElement('label');
+  titleLabel.setAttribute('for', 'editBookTitleForm');
+  titleLabel.innerHTML = 'Title';
+
+  const titleInput = document.createElement('input');
+  titleInput.setAttribute('id', 'editBookTitleForm');
+  titleInput.setAttribute('type', 'text');
+  titleInput.required = true;
+  titleInput.value = selectedBook.title;
+
+  const titleWrapper = document.createElement('div');
+  titleWrapper.append(titleLabel, titleInput);
+  
+  const authorLabel = document.createElement('label');
+  authorLabel.setAttribute('for', 'editBookAuthorForm');
+  authorLabel.innerHTML = 'Author';
+
+  const authorInput = document.createElement('input');
+  authorInput.setAttribute('id', 'editBookAuthorForm');
+  authorInput.setAttribute('type', 'text');
+  authorInput.required = true;
+  authorInput.value = selectedBook.author;
+
+  const authorWrapper = document.createElement('div');
+  authorWrapper.append(authorLabel, authorInput);
+  
+  const yearLabel = document.createElement('label');
+  yearLabel.setAttribute('for', 'editBookYearForm');
+  yearLabel.innerHTML = 'Year';
+
+  const yearInput = document.createElement('input');
+  yearInput.setAttribute('id', 'editBookYearForm');
+  yearInput.setAttribute('type', 'number');
+  yearInput.required = true;
+  yearInput.value = selectedBook.year;
+
+  const yearWrapper = document.createElement('div');
+  yearWrapper.append(yearLabel, yearInput);
+
+  modalForm.append(titleWrapper, authorWrapper, yearWrapper);
+
+  modalCancelButton.innerHTML = 'Discard Edit';
+  modalConfirmButton.innerHTML = 'Confirm Edit';
+  modalConfirmButton.setAttribute('type', 'submit');
+
+  modalConfirmButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    updateBook(bookIndex);
+    document.dispatchEvent(new Event(RENDER_EVENT));
+  });
+};
+
 const openModal = (modal, modalType, modalTarget, modalId) => {
   console.log(modalId)
   modalIsOpened = true;
@@ -232,6 +323,8 @@ const openModal = (modal, modalType, modalTarget, modalId) => {
 
   if (modalType === 'delete') {
     makeDeleteModal(modal, modalTarget, modalId);
+  } else {
+    makeEditModal(modal, modalId);
   }
 };
 
@@ -278,6 +371,15 @@ document.addEventListener(RENDER_EVENT, () => {
       const modalId = modalTarget === 'book' ? parseInt(btn.dataset.id) : btn.dataset.id;
 
       btn.addEventListener('click', () => openModal(modalElement, 'delete', modalTarget, modalId));
+    });
+
+  const openEditModalButtons = document.querySelectorAll('.openEditModalButton');
+  openEditModalButtons
+    .forEach((btn) => {
+      const modalTarget = btn.dataset.target;
+      const modalId = parseInt(btn.dataset.id);
+
+      btn.addEventListener('click', () => openModal(modalElement, 'edit', modalTarget, modalId));
     });
   
   const closeModalButtons = document.querySelectorAll('.closeModalButton');

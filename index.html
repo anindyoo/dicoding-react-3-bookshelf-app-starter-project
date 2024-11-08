@@ -97,28 +97,31 @@
         </section>
       </div>
       <div id="modal">
-        <div class="modal-container">
-          <button class="modal-close-button closeModalButton">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="cross-icon">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-            
-          </button>
-          <div class="modal-icon-indicator">
-          </div>
-          <div class="modal-text-wrapper">
-            <h2>Modal title</h2>
-            <p>You are going to delete a book. Are you sure?</p>
-          </div>
-          <div class="modal-buttons-wrapper">
-            <button type="button" class="modal-cancel-button closeModalButton">
-              No, keep it.
+        <form id="updateBookForm">
+          <div class="modal-container">
+            <button type="button" class="modal-close-button closeModalButton">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="cross-icon">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+              
             </button>
-            <button type="button" class="modal-confirm-button">
-              Yes, delete it!
-            </button>
+            <div class="modal-icon-indicator">
+            </div>
+            <div class="modal-text-wrapper">
+              <h2>Modal title</h2>
+              <p>You are going to delete a book. Are you sure?</p>
+            </div>
+            <div class="modal-form-wrapper"></div>
+            <div class="modal-buttons-wrapper">
+              <button type="button" class="modal-cancel-button closeModalButton">
+                No, keep it.
+              </button>
+              <button type="button" class="modal-confirm-button">
+                Yes, delete it!
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </main>
   </body>

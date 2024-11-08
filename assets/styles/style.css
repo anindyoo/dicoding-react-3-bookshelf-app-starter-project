@@ -76,21 +76,24 @@ header .center-element {
   gap: 1.5rem;
 }
 
-#bookForm {
+#bookForm,
+.modal-form-wrapper {
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
 #bookForm > :not(.book-checkbox, button),
-#searchBook div {
+#searchBook div,
+#updateBookForm .modal-form-wrapper div {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 #bookForm input,
-#searchBook input {
+#searchBook input,
+#updateBookForm input {
   border: none;
   outline: none;
   padding: unset;
@@ -104,8 +107,13 @@ header .center-element {
   border-color: var(---main-text-color);
 }
 
+#updateBookForm input {
+  width: 18rem;
+}
+
 #bookForm input:focus,
-#searchBook input:focus {
+#searchBook input:focus,
+#updateBookForm input:focus {
   padding: 0.75rem 0.75rem 0.5rem 0.75rem;
   background-color: var(---main-bg-color);
 }
@@ -266,6 +274,8 @@ header .center-element {
   background-color: var(---main-bg-color);
   padding: 0.75rem;
   border-radius: 100%;
+  width: 3rem;
+  height: 3rem;
 }
 
 .modal-icon-indicator svg {
@@ -283,6 +293,10 @@ header .center-element {
 .modal-text-wrapper h2,
 .modal-text-wrapper p {
   text-align: center;
+}
+
+.modal-form-wrapper {
+  gap: 1.25rem;
 }
 
 .modal-buttons-wrapper {
