@@ -84,7 +84,8 @@ const toggleIsComplete = (bookId) => {
 
   books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
   document.dispatchEvent(new Event(RENDER_EVENT));
-  saveData();
+
+  return saveData();
 };
 
 const makeBookElement = (bookObject) => {
@@ -150,10 +151,6 @@ const makeBookElement = (bookObject) => {
 
 const closeModal = () => {
   const modal = document.getElementById('modal');
-  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
-
-  modalConfirmButton.classList.remove('danger-button');
-
   modal.style.display = 'none';
 };
 
@@ -173,6 +170,7 @@ const addBook = () => {
 
   const id = generateId();
   const bookObject = generateBookObject(id, bookTitle, bookAuthor, bookYear, bookIsComplete);
+
   books.push(bookObject);
 
   syncBookTitleSearch();
@@ -186,21 +184,21 @@ const removeBook = (bookId) => {
   if (selectedBookIndex < 0) return 'Book not found.';
 
   books.splice(selectedBookIndex, 1);
+
   syncBookTitleSearch();
   closeModal();
   document.dispatchEvent(new Event(RENDER_EVENT));
-  saveData();
+  return saveData();
 };
 
 const clearBookshelf = (type) => {
-  console.log(type);
   const isComplete = type === 'Complete';
 
-  console.log('IM ISCOMPLETE: ', isComplete);
-
-  books.forEach((book, index) => {
-    if (book.isComplete === isComplete) { books.splice(index, 1); }
-  });
+  for (let i = books.length - 1; i >= 0; i -= 1) {
+    if (books[i].isComplete === isComplete) {
+      books.splice(i, 1);
+    }
+  }
 
   syncBookTitleSearch();
   closeModal();
@@ -239,11 +237,22 @@ const makeDeleteModal = (modal, target, id) => {
   const modalP = modal.querySelector('p');
   const modalForm = modal.querySelector('.modal-form-wrapper');
   const modalCancelButton = modal.querySelector('.modal-cancel-button');
-  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
+  const modalButtonsWrapper = modal.querySelector('.modal-buttons-wrapper');
 
-  modalCancelButton.innerHTML = 'No, keep it';
-  modalConfirmButton.classList.add('danger-button');
+  const selectModalButton = modal.querySelector('#modal-confirm-button');
+  if (selectModalButton) {
+    selectModalButton.remove();
+  }
+
   modalForm.innerHTML = '';
+  modalCancelButton.innerHTML = 'No, keep it';
+
+  const modalDeleteButton = document.createElement('button');
+  modalDeleteButton.setAttribute('id', 'modal-confirm-button');
+  modalDeleteButton.setAttribute('type', 'button');
+  modalDeleteButton.classList.add('danger-button');
+
+  modalButtonsWrapper.append(modalDeleteButton);
 
   if (target === 'book') {
     const bookIndex = findBookIndex(id);
@@ -252,16 +261,16 @@ const makeDeleteModal = (modal, target, id) => {
     modalIcon.innerHTML = deleteIcon;
     modalH2.innerHTML = 'Delete Book';
     modalP.innerHTML = `You are about to delete a book: <strong>'${selectedBook.title}'</strong>. Proceed to delete?'`;
-    modalConfirmButton.innerHTML = 'Yes, delete it!';
 
-    modalConfirmButton.addEventListener('click', () => removeBook(id));
+    modalDeleteButton.innerHTML = 'Yes, delete it!';
+    modalDeleteButton.addEventListener('click', () => removeBook(id));
   } else {
     modalIcon.innerHTML = clearBookshelfIcon;
     modalH2.innerHTML = `Clear ${id} Bookshelf`;
     modalP.innerHTML = `You are about to clear the <strong>${id} bookshelf</strong>. Proceed to clear?`;
-    modalConfirmButton.innerHTML = 'Yes, clear it!';
 
-    modalConfirmButton.addEventListener('click', () => clearBookshelf(id));
+    modalDeleteButton.innerHTML = 'Yes, clear it!';
+    modalDeleteButton.addEventListener('click', () => clearBookshelf(id));
   }
 };
 
@@ -271,15 +280,15 @@ const makeEditModal = (modal, id) => {
   const modalP = modal.querySelector('p');
   const modalForm = modal.querySelector('.modal-form-wrapper');
   const modalCancelButton = modal.querySelector('.modal-cancel-button');
-  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
+  const modalButtonsWrapper = modal.querySelector('.modal-buttons-wrapper');
 
   const bookIndex = findBookIndex(id);
   const selectedBook = books[bookIndex];
 
+  modalForm.innerHTML = '';
   modalIcon.innerHTML = editIcon;
   modalH2.innerHTML = 'Edit Book';
   modalP.innerHTML = `Edit book: <strong>${selectedBook.title}</strong>.`;
-  modalForm.innerHTML = '';
 
   const titleLabel = document.createElement('label');
   titleLabel.setAttribute('for', 'editBookTitleForm');
@@ -323,14 +332,25 @@ const makeEditModal = (modal, id) => {
   modalForm.append(titleWrapper, authorWrapper, yearWrapper);
 
   modalCancelButton.innerHTML = 'Discard Edit';
-  modalConfirmButton.innerHTML = 'Confirm Edit';
-  modalConfirmButton.setAttribute('type', 'submit');
 
-  modalConfirmButton.addEventListener('click', (event) => {
+  const selectModalButton = modal.querySelector('#modal-confirm-button');
+  if (selectModalButton) {
+    selectModalButton.remove();
+  }
+
+  const modalEditButton = document.createElement('button');
+  modalEditButton.innerHTML = 'Confirm Edit';
+  modalEditButton.setAttribute('id', 'modal-confirm-button');
+  modalEditButton.setAttribute('type', 'submit');
+  modalEditButton.classList.add('primary-button');
+
+  modalEditButton.addEventListener('click', (event) => {
     event.preventDefault();
     updateBook(bookIndex);
     document.dispatchEvent(new Event(RENDER_EVENT));
   });
+
+  modalButtonsWrapper.append(modalEditButton);
 };
 
 const openModal = (modalType, modalTarget, modalId) => {

@@ -322,11 +322,12 @@ header .center-element {
   background-color: var(---main-bg-color);
 }
 
-.modal-confirm-button {
+.primary-button {
   color: #FFFFFF;
   background-color: var(---main-text-color);
 }
 
 .danger-button {
+  color: #FFFFFF;
   background-color: var(---danger-color);
 }
