@@ -30,12 +30,11 @@ const clearBookshelfIcon = `
 const books = [];
 let filteredBooks = books;
 let searchQuery = '';
-let modalIsOpened = false;
 
 const generateId = () => +new Date();
 
 const isStorageExist = () => {
-  if (typeof (Storage) === undefined) {
+  if (typeof (Storage) === 'undefined') {
     alert('Browser tidak mendukung local storage.');
     return false;
   }
@@ -52,7 +51,7 @@ const saveData = () => {
 
 const loadDataFromStorage = () => {
   const dataFromStorage = localStorage.getItem(STORAGE_KEY);
-  let data = JSON.parse(dataFromStorage);
+  const data = JSON.parse(dataFromStorage);
 
   if (data !== null) { books.push(...data); }
 
@@ -67,8 +66,35 @@ const generateBookObject = (id, title, author, year, isComplete) => ({
   isComplete,
 });
 
+const findBookIndex = (bookId) => books.findIndex((book) => book.id === bookId);
+
+const searchBookByTitle = (query) => {
+  searchQuery = query;
+
+  filteredBooks = books.filter((book) => book.title.toLowerCase()
+    .includes(query.toLowerCase()));
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+};
+
+const toggleIsComplete = (bookId) => {
+  const selectedBookIndex = findBookIndex(bookId);
+
+  if (selectedBookIndex < 0) return 'Book not found.';
+
+  books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
+};
+
 const makeBookElement = (bookObject) => {
-  const {id, title, author, year, isComplete} = bookObject;
+  const {
+    id,
+    title,
+    author,
+    year,
+    isComplete,
+  } = bookObject;
 
   const titleText = document.createElement('h3');
   titleText.innerText = title;
@@ -89,7 +115,7 @@ const makeBookElement = (bookObject) => {
   const bookDetailWrapper = document.createElement('div');
   bookDetailWrapper.classList.add('book-detail-wrapper');
   bookDetailWrapper.append(titleText, authorYearWrapper);
-  
+
   const bookIsCompleteButton = document.createElement('button');
   bookIsCompleteButton.innerHTML = isComplete ? checkedIcon : checkIcon;
   bookIsCompleteButton.setAttribute('data-testid', 'bookItemIsCompleteButton');
@@ -101,7 +127,7 @@ const makeBookElement = (bookObject) => {
   deleteBookButton.setAttribute('data-target', 'book');
   deleteBookButton.setAttribute('data-id', id);
   deleteBookButton.classList.add('openDeleteModalButton');
-  
+
   const editBookButton = document.createElement('button');
   editBookButton.innerHTML = editIcon;
   editBookButton.setAttribute('data-testid', 'bookItemEditButton');
@@ -122,31 +148,34 @@ const makeBookElement = (bookObject) => {
   return bookItem;
 };
 
-const findBookIndex = (bookId) => books.findIndex((book) => book.id === bookId);
+const closeModal = () => {
+  const modal = document.getElementById('modal');
+  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
 
-const countBookByCompletion = (booksArray, completionStatus) => booksArray.filter((book) => book.isComplete === completionStatus).length;
+  modalConfirmButton.classList.remove('danger-button');
+
+  modal.style.display = 'none';
+};
+
+const syncBookTitleSearch = () => {
+  filteredBooks = books;
+  searchBookByTitle(searchQuery);
+};
+
+const countBookByCompletion = (booksArray, completionStatus) => booksArray
+  .filter((book) => book.isComplete === completionStatus).length;
 
 const addBook = () => {
   const bookTitle = document.getElementById('bookFormTitle').value;
   const bookAuthor = document.getElementById('bookFormAuthor').value;
   const bookYear = document.getElementById('bookFormYear').value;
   const bookIsComplete = document.getElementById('bookFormIsComplete').checked;
-  
+
   const id = generateId();
   const bookObject = generateBookObject(id, bookTitle, bookAuthor, bookYear, bookIsComplete);
   books.push(bookObject);
 
   syncBookTitleSearch();
-  document.dispatchEvent(new Event(RENDER_EVENT));
-  saveData();
-};
-
-const toggleIsComplete = (bookId) => {
-  const selectedBookIndex = findBookIndex(bookId);
-
-  if (selectedBookIndex < 0) return 'Book not found.';
-
-  books[selectedBookIndex].isComplete = !books[selectedBookIndex].isComplete;
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
 };
@@ -164,8 +193,11 @@ const removeBook = (bookId) => {
 };
 
 const clearBookshelf = (type) => {
+  console.log(type);
   const isComplete = type === 'Complete';
-  
+
+  console.log('IM ISCOMPLETE: ', isComplete);
+
   books.forEach((book, index) => {
     if (book.isComplete === isComplete) { books.splice(index, 1); }
   });
@@ -189,25 +221,11 @@ const updateBook = (bookIndex) => {
     author: bookAuthor,
     year: bookYear,
   };
-  
+
   closeModal();
   syncBookTitleSearch();
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
-};
-
-const searchBookByTitle = (query) => {
-  searchQuery = query;
-
-  filteredBooks = books.filter((book) => book.title.toLowerCase()
-    .includes(query.toLowerCase()));
-
-  document.dispatchEvent(new Event(RENDER_EVENT));
-};
-
-const syncBookTitleSearch = () => {
-  filteredBooks = books;
-  searchBookByTitle(searchQuery);
 };
 
 const setSubmitButtonText = (checked) => {
@@ -222,7 +240,7 @@ const makeDeleteModal = (modal, target, id) => {
   const modalForm = modal.querySelector('.modal-form-wrapper');
   const modalCancelButton = modal.querySelector('.modal-cancel-button');
   const modalConfirmButton = modal.querySelector('.modal-confirm-button');
-  
+
   modalCancelButton.innerHTML = 'No, keep it';
   modalConfirmButton.classList.add('danger-button');
   modalForm.innerHTML = '';
@@ -242,7 +260,7 @@ const makeDeleteModal = (modal, target, id) => {
     modalH2.innerHTML = `Clear ${id} Bookshelf`;
     modalP.innerHTML = `You are about to clear the <strong>${id} bookshelf</strong>. Proceed to clear?`;
     modalConfirmButton.innerHTML = 'Yes, clear it!';
-    
+
     modalConfirmButton.addEventListener('click', () => clearBookshelf(id));
   }
 };
@@ -275,7 +293,7 @@ const makeEditModal = (modal, id) => {
 
   const titleWrapper = document.createElement('div');
   titleWrapper.append(titleLabel, titleInput);
-  
+
   const authorLabel = document.createElement('label');
   authorLabel.setAttribute('for', 'editBookAuthorForm');
   authorLabel.innerHTML = 'Author';
@@ -288,7 +306,7 @@ const makeEditModal = (modal, id) => {
 
   const authorWrapper = document.createElement('div');
   authorWrapper.append(authorLabel, authorInput);
-  
+
   const yearLabel = document.createElement('label');
   yearLabel.setAttribute('for', 'editBookYearForm');
   yearLabel.innerHTML = 'Year';
@@ -318,7 +336,6 @@ const makeEditModal = (modal, id) => {
 const openModal = (modalType, modalTarget, modalId) => {
   const modal = document.getElementById('modal');
 
-  modalIsOpened = true;
   modal.style.display = 'block';
 
   if (modalType === 'delete') {
@@ -328,35 +345,25 @@ const openModal = (modalType, modalTarget, modalId) => {
   }
 };
 
-const closeModal = () => {
-  const modal = document.getElementById('modal');
-  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
-
-  modalConfirmButton.classList.remove('danger-button');
-
-  modalIsOpened = false;
-  modal.style.display = 'none';
-};
-
 document.addEventListener(RENDER_EVENT, () => {
   const incompleteBookList = document.getElementById('incompleteBookList');
-  incompleteBookList.innerHTML= '';
-  
+  incompleteBookList.innerHTML = '';
+
   const incompleteCount = countBookByCompletion(filteredBooks, false);
   const incompleteCountElement = document.getElementById('incompleteCount');
   incompleteCountElement.innerHTML = `${incompleteCount} books`;
-  
+
   if (incompleteCount === 0) {
     incompleteBookList.innerHTML = '<p>Bookshelf empty.</p>';
   }
 
   const completeBookList = document.getElementById('completeBookList');
   completeBookList.innerHTML = '';
-  
+
   const completeCount = countBookByCompletion(filteredBooks, true);
   const completeCountElement = document.getElementById('completeCount');
   completeCountElement.innerHTML = `${completeCount} books`;
-  
+
   if (completeCount === 0) {
     completeBookList.innerHTML = '<p>Bookshelf empty.</p>';
   }
@@ -364,14 +371,16 @@ document.addEventListener(RENDER_EVENT, () => {
   filteredBooks.map((book) => {
     const bookElement = makeBookElement(book);
 
-    book.isComplete ? completeBookList.append(bookElement) : incompleteBookList.append(bookElement);
+    return book.isComplete
+      ? completeBookList.append(bookElement)
+      : incompleteBookList.append(bookElement);
   });
 
   const openDeleteModalButtons = document.querySelectorAll('.openDeleteModalButton');
   openDeleteModalButtons
     .forEach((btn) => {
       const modalTarget = btn.dataset.target;
-      const modalId = modalTarget === 'book' ? parseInt(btn.dataset.id) : btn.dataset.id;
+      const modalId = modalTarget === 'book' ? parseInt(btn.dataset.id, 10) : btn.dataset.id;
 
       btn.addEventListener('click', () => openModal('delete', modalTarget, modalId));
     });
@@ -380,11 +389,11 @@ document.addEventListener(RENDER_EVENT, () => {
   openEditModalButtons
     .forEach((btn) => {
       const modalTarget = btn.dataset.target;
-      const modalId = parseInt(btn.dataset.id);
+      const modalId = parseInt(btn.dataset.id, 10);
 
       btn.addEventListener('click', () => openModal('edit', modalTarget, modalId));
     });
-  
+
   const closeModalButtons = document.querySelectorAll('.closeModalButton');
   closeModalButtons
     .forEach((btn) => btn.addEventListener('click', () => closeModal()));
