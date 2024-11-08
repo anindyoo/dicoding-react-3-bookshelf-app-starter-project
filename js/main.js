@@ -122,13 +122,9 @@ const makeBookElement = (bookObject) => {
   return bookItem;
 };
 
-const findBookIndex = (bookId) => {
-  return books.findIndex((book) => book.id === bookId);
-};
+const findBookIndex = (bookId) => books.findIndex((book) => book.id === bookId);
 
-const countBookByCompletion = (booksArray, completionStatus) => {
-  return booksArray.filter((book) => book.isComplete === completionStatus).length;
-};
+const countBookByCompletion = (booksArray, completionStatus) => booksArray.filter((book) => book.isComplete === completionStatus).length;
 
 const addBook = () => {
   const bookTitle = document.getElementById('bookFormTitle').value;
@@ -224,8 +220,10 @@ const makeDeleteModal = (modal, target, id) => {
   const modalH2 = modal.querySelector('h2');
   const modalP = modal.querySelector('p');
   const modalForm = modal.querySelector('.modal-form-wrapper');
+  const modalCancelButton = modal.querySelector('.modal-cancel-button');
   const modalConfirmButton = modal.querySelector('.modal-confirm-button');
   
+  modalCancelButton.innerHTML = 'No, keep it';
   modalConfirmButton.classList.add('danger-button');
   modalForm.innerHTML = '';
 
@@ -236,6 +234,7 @@ const makeDeleteModal = (modal, target, id) => {
     modalIcon.innerHTML = deleteIcon;
     modalH2.innerHTML = 'Delete Book';
     modalP.innerHTML = `You are about to delete a book: <strong>'${selectedBook.title}'</strong>. Proceed to delete?'`;
+    modalConfirmButton.innerHTML = 'Yes, delete it!';
 
     modalConfirmButton.addEventListener('click', () => removeBook(id));
   } else {
@@ -316,8 +315,9 @@ const makeEditModal = (modal, id) => {
   });
 };
 
-const openModal = (modal, modalType, modalTarget, modalId) => {
-  console.log(modalId)
+const openModal = (modalType, modalTarget, modalId) => {
+  const modal = document.getElementById('modal');
+
   modalIsOpened = true;
   modal.style.display = 'block';
 
@@ -329,6 +329,11 @@ const openModal = (modal, modalType, modalTarget, modalId) => {
 };
 
 const closeModal = () => {
+  const modal = document.getElementById('modal');
+  const modalConfirmButton = modal.querySelector('.modal-confirm-button');
+
+  modalConfirmButton.classList.remove('danger-button');
+
   modalIsOpened = false;
   modal.style.display = 'none';
 };
@@ -362,15 +367,13 @@ document.addEventListener(RENDER_EVENT, () => {
     book.isComplete ? completeBookList.append(bookElement) : incompleteBookList.append(bookElement);
   });
 
-  const modalElement = document.getElementById('modal');
-
   const openDeleteModalButtons = document.querySelectorAll('.openDeleteModalButton');
   openDeleteModalButtons
     .forEach((btn) => {
       const modalTarget = btn.dataset.target;
       const modalId = modalTarget === 'book' ? parseInt(btn.dataset.id) : btn.dataset.id;
 
-      btn.addEventListener('click', () => openModal(modalElement, 'delete', modalTarget, modalId));
+      btn.addEventListener('click', () => openModal('delete', modalTarget, modalId));
     });
 
   const openEditModalButtons = document.querySelectorAll('.openEditModalButton');
@@ -379,7 +382,7 @@ document.addEventListener(RENDER_EVENT, () => {
       const modalTarget = btn.dataset.target;
       const modalId = parseInt(btn.dataset.id);
 
-      btn.addEventListener('click', () => openModal(modalElement, 'edit', modalTarget, modalId));
+      btn.addEventListener('click', () => openModal('edit', modalTarget, modalId));
     });
   
   const closeModalButtons = document.querySelectorAll('.closeModalButton');
