@@ -62,7 +62,7 @@ const generateBookObject = (id, title, author, year, isComplete) => ({
   id,
   title,
   author,
-  year,
+  year: parseInt(year, 10),
   isComplete,
 });
 
@@ -217,7 +217,7 @@ const updateBook = (bookIndex) => {
     ...selectedBook,
     title: bookTitle,
     author: bookAuthor,
-    year: bookYear,
+    year: parseInt(bookYear, 10),
   };
 
   closeModal();
@@ -396,6 +396,8 @@ document.addEventListener(RENDER_EVENT, () => {
       : incompleteBookList.append(bookElement);
   });
 
+  console.log(books);
+
   const openDeleteModalButtons = document.querySelectorAll('.openDeleteModalButton');
   openDeleteModalButtons
     .forEach((btn) => {
@@ -440,4 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const modalElement = document.getElementById('modal');
   modalElement.style.display = 'none';
+
+  const searchButton = document.getElementById('searchSubmit');
+  searchButton.addEventListener('click', (event) => event.preventDefault());
 });

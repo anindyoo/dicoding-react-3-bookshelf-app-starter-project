@@ -332,6 +332,10 @@ header .center-element {
   background-color: var(---danger-color);
 }
 
+#searchSubmit {
+  display: none;
+}
+
 @media screen and (max-width: 768px) {
   section {
     padding: 1.5rem 1rem;
