@@ -223,7 +223,7 @@ header .center-element {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.5rem;
 }
 
 .check-icon {
@@ -330,4 +330,48 @@ header .center-element {
 .danger-button {
   color: #FFFFFF;
   background-color: var(---danger-color);
+}
+
+@media screen and (max-width: 768px) {
+  section {
+    padding: 1.5rem 1rem;
+    border-radius: 1.25rem;
+  }
+  
+  .center-element {
+    width: 95%;
+  }
+
+  .list-header {
+    flex-direction: column;
+  }
+
+  .count-empty-wrapper {
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .submit-button-wrappper button {
+    justify-content: center;
+  }
+
+  .modal-container {
+    width: 90%;
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .submit-button-wrappper {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .bookshelf {
+    gap: 1rem;  
+    padding: 1rem 0.75rem;
+  }
+
+  .modal-container {
+    width: 80%;
+  }
 }
